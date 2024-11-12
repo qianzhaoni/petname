@@ -498,8 +498,6 @@
                         .filter(Boolean)
                         .join(', ');
                 });
-                const OPENAI_API_KEY ='';
-                //const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
                 const generateNames = async () => {
                     if (!petInfo.value.breed || !petInfo.value.color || petInfo.value.personalities.length === 0) {
@@ -512,46 +510,23 @@
                     try {
                         const selectedTraits = petInfo.value.personalities
                             .map(id => personalityTraits.find(t => t.id === id)?.name)
-                            .filter(Boolean)
-                            .join(', ');
+                            .filter(Boolean);
 
                         const selectedColor = colors.find(c => c.id === petInfo.value.color)?.name;
                         const selectedBreed = breeds.find(b => b.value === petInfo.value.breed)?.label;
 
-                        const prompt = `Generate 5 ${petInfo.value.nameStyle} dog names for a ${selectedColor} ${selectedBreed} 
-                            who is a ${petInfo.value.gender} and has these personality traits: ${selectedTraits}.
-                            ${petInfo.value.customRequirements ? `Additional requirements: ${petInfo.value.customRequirements}` : ''}
-                            
-                            For each name, provide:
-                            1. The name itself
-                            2. A detailed explanation of why this name suits the dog
-                            3. The origin or meaning of the name
-                            
-                            Format each response as a JSON object with these fields:
-                            {
-                                "names": [
-                                    {
-                                        "value": "name",
-                                        "description": "explanation",
-                                        "origin": "origin/meaning"
-                                    }
-                                ]
-                            }`;
-
-                        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        const response = await fetch('/api/names/generate', {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${OPENAI_API_KEY}`
+                                'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                model: "gpt-3.5-turbo",
-                                messages: [{
-                                    role: "user",
-                                    content: prompt
-                                }],
-                                temperature: 0.7,
-                                max_tokens: 1000
+                                breed: selectedBreed,
+                                gender: petInfo.value.gender,
+                                nameStyle: petInfo.value.nameStyle,
+                                color: selectedColor,
+                                personalities: selectedTraits,
+                                customRequirements: petInfo.value.customRequirements
                             })
                         });
 
@@ -560,16 +535,18 @@
                         }
 
                         const data = await response.json();
-                        const content = data.choices[0].message.content;
-                        const generatedResults = JSON.parse(content);
-
-                        generatedNames.value = generatedResults.names.map((name, index) => ({
-                            id: Date.now() + index,
-                            value: name.value,
-                            description: `${name.description}\n\nOrigin: ${name.origin}`,
-                            saved: false
-                        }));
-
+                        if (data.success && data.data) {
+                            // 解析返回的数据
+                            const parsedNames = JSON.parse(data.data);
+                            generatedNames.value = parsedNames.names.map((name, index) => ({
+                                id: Date.now() + index,
+                                value: name.value,
+                                description: `${name.description}\n\nOrigin: ${name.origin}`,
+                                saved: false
+                            }));
+                        } else {
+                            throw new Error('Invalid response format');
+                        }
                     } catch (error) {
                         console.error('Error generating names:', error);
                         ElMessage.error('Failed to generate names. Please try again.');
