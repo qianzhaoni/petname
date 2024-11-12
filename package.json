@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "vercel-build": "cd frontend && npm install && npm run build"
   },
   "engines": {
     "node": ">=14.0.0"
