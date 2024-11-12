@@ -2,11 +2,9 @@
   "name": "petname",
   "version": "1.0.0",
   "description": "AI Pet Name Generator",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "start": "npx serve public"
-  },
-  "dependencies": {
-    "serve": "^14.2.1"
+    "build": "cd frontend && npm install && npm run build",
+    "start": "node backend/server.js"
   }
 } 
