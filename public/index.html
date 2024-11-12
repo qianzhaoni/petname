@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pet Name Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.3.7/dist/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/element-plus@2.3.7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/element-plus@2.3.7/dist/locale/en.min.js"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    <style>
+        :root {
+            --primary-color: #409eff;
+            --text-color: #333;
+            --border-radius: 12px;
+            --box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: var(--text-color);
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #409eff 0%, #2c50e3 100%);
+            color: white;
+            padding: 60px 20px 100px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-section h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .hero-section p {
+            font-size: 1.2em;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: -50px auto 40px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .generator-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        .form-grid {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: flex-end;
+        }
+
+        .form-control {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .el-select {
+            width: 100%;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 30px;
+        }
+
+        .radio-group .el-radio {
+            margin-right: 0;
+        }
+
+        .tag-group {
+            margin-bottom: 20px;
+        }
+
+        .tag-group-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #e4e7ed;
+            background: white;
+            font-size: 14px;
+        }
+
+        .tag.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .generate-button {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .generate-button .el-button {
+            padding: 12px 30px;
+            font-size: 16px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .name-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .name-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .name-value {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .name-description {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            flex-grow: 1;
+            white-space: pre-line;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 40px 20px 80px;
+            }
+
+            .hero-section p {
+                font-size: 1em;
+                padding: 0 10px;
+            }
+
+            .main-container {
+                margin-top: -30px;
+                padding: 0 15px;
+            }
+
+            .generator-card {
+                padding: 20px;
+                margin-top: 0;
+            }
+
+            .form-grid {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        /* Breed 控件样式 */
+        .form-control:first-child {
+            flex: 1;
+        }
+
+        /* Gender 控件样式 */
+        .form-control:nth-child(2) {
+            flex: 0.8;
+        }
+
+        /* Name Style 控件样式 */
+        .form-control.name-style {
+            flex: 2;
+        }
+
+        .name-style-group {
+            display: flex;
+            justify-content: flex-start;
+            gap: 30px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 30px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .form-grid {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .form-control {
+                width: 100%;
+            }
+
+            .form-control.name-style {
+                flex: 1;
+            }
+
+            .name-style-group {
+                justify-content: space-between;
+                gap: 10px;
+            }
+        }
+
+        /* 添加滚动条样式 */
+        .name-description::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .name-description::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .name-description::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .name-description::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="hero-section">
+            <h1>AI Pet Name Generator</h1>
+            <p>Create the perfect name for your furry friend with our intelligent name generator</p>
+        </div>
+
+        <div class="main-container">
+            <div class="generator-card">
+                <div class="section-title">Customize Your Pet's Profile</div>
+                
+                <div class="form-grid">
+                    <div class="form-control">
+                        <div class="form-label">Breed</div>
+                        <el-select 
+                            v-model="petInfo.breed" 
+                            placeholder="Select breed"
+                        >
+                            <el-option 
+                                v-for="breed in breeds" 
+                                :key="breed.value" 
+                                :label="breed.label" 
+                                :value="breed.value">
+                            </el-option>
+                        </el-select>
+                    </div>
+
+                    <div class="form-control">
+                        <div class="form-label">Gender</div>
+                        <el-radio-group v-model="petInfo.gender" class="radio-group">
+                            <el-radio label="boy">Boy</el-radio>
+                            <el-radio label="girl">Girl</el-radio>
+                        </el-radio-group>
+                    </div>
+
+                    <div class="form-control name-style">
+                        <div class="form-label">Name Style</div>
+                        <el-radio-group v-model="petInfo.nameStyle" class="name-style-group">
+                            <el-radio label="unique">Unique Names</el-radio>
+                            <el-radio label="cute">Cute Names</el-radio>
+                            <el-radio label="funny">Funny Names</el-radio>
+                        </el-radio-group>
+                    </div>
+                </div>
+
+                <div class="tag-group">
+                    <div class="tag-group-title">Color</div>
+                    <div class="tags-container">
+                        <span 
+                            v-for="color in colors" 
+                            :key="color.id"
+                            class="tag"
+                            :class="{ active: petInfo.color === color.id }"
+                            @click="selectColor(color.id)"
+                        >
+                            {{ color.name }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="tag-group">
+                    <div class="tag-group-title">Personality Traits (Select up to 3)</div>
+                    <div class="tags-container">
+                        <span 
+                            v-for="trait in personalityTraits" 
+                            :key="trait.id"
+                            class="tag"
+                            :class="{ active: petInfo.personalities.includes(trait.id) }"
+                            @click="togglePersonality(trait.id)"
+                        >
+                            {{ trait.name }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="tag-group">
+                    <div class="tag-group-title">Additional Requirements (Optional)</div>
+                    <el-input
+                        v-model="petInfo.customRequirements"
+                        type="textarea"
+                        :rows="3"
+                        placeholder="Enter any additional requirements for your pet's name (e.g., cultural preferences, specific meanings, or special characteristics)"
+                    ></el-input>
+                </div>
+
+                <div class="generate-button">
+                    <el-button type="primary" size="large" @click="generateNames" :loading="loading">
+                        Generate Names
+                    </el-button>
+                </div>
+            </div>
+
+            <div v-if="generatedNames.length" class="results-grid">
+                <div 
+                    v-for="name in generatedNames" 
+                    :key="name.id"
+                    class="name-card"
+                    @click="showNameDetails(name)"
+                >
+                    <div class="name-value">{{ name.value }}</div>
+                    <div class="name-description">{{ name.description }}</div>
+                    <el-button 
+                        size="small" 
+                        type="primary" 
+                        @click.stop="saveName(name)"
+                        :disabled="name.saved"
+                    >
+                        {{ name.saved ? 'Saved' : 'Save' }}
+                    </el-button>
+                </div>
+            </div>
+
+            <div v-if="generatedNames.length" class="generate-button">
+                <el-button 
+                    type="primary" 
+                    size="large"
+                    @click="generateNames" 
+                    :loading="loading"
+                >
+                    Generate More Names
+                </el-button>
+            </div>
+        </div>
+
+        <el-dialog
+            v-model="dialogVisible"
+            :title="selectedName ? selectedName.value : 'Name Details'"
+            width="50%"
+        >
+            <template v-if="selectedName">
+                <p><strong>Meaning:</strong> {{ selectedName.description }}</p>
+                <p><strong>Breed:</strong> {{ getBreedLabel(petInfo.breed) }}</p>
+                <p><strong>Gender:</strong> {{ petInfo.gender === 'boy' ? 'Boy' : 'Girl' }}</p>
+                <p><strong>Style:</strong> {{ getNameStyleLabel(petInfo.nameStyle) }}</p>
+                <p><strong>Color:</strong> {{ getColorName(petInfo.color) }}</p>
+                <p><strong>Traits:</strong> {{ getSelectedPersonalities }}</p>
+            </template>
+        </el-dialog>
+
+        <div class="footer">
+            © 2024 AI Pet Name Generator. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+        const { ElMessage } = ElementPlus;
+
+        const app = createApp({
+            setup() {
+                const petInfo = ref({
+                    breed: '',
+                    gender: 'boy',
+                    nameStyle: 'unique',
+                    color: null,
+                    personalities: [],
+                    customRequirements: ''
+                });
+
+                const breeds = [
+                    { label: 'Husky', value: 'husky' },
+                    { label: 'Golden Retriever', value: 'golden' },
+                    { label: 'German Shepherd', value: 'german-shepherd' },
+                    { label: 'Labrador', value: 'labrador' },
+                    { label: 'Poodle', value: 'poodle' },
+                    { label: 'Bulldog', value: 'bulldog' },
+                    { label: 'Rottweiler', value: 'rottweiler' },
+                    { label: 'Beagle', value: 'beagle' },
+                    { label: 'Yorkshire Terrier', value: 'yorkshire' },
+                    { label: 'Boxer', value: 'boxer' }
+                ];
+
+                const colors = [
+                    { id: 1, name: 'Black' },
+                    { id: 2, name: 'White' },
+                    { id: 3, name: 'Brown' },
+                    { id: 4, name: 'Golden' },
+                    { id: 5, name: 'Grey' },
+                    { id: 6, name: 'Spotted' },
+                    { id: 7, name: 'Mixed' }
+                ];
+
+                const personalityTraits = [
+                    { id: 1, name: 'Friendly' },
+                    { id: 2, name: 'Playful' },
+                    { id: 3, name: 'Brave' },
+                    { id: 4, name: 'Calm' },
+                    { id: 5, name: 'Smart' },
+                    { id: 6, name: 'Loyal' },
+                    { id: 7, name: 'Energetic' },
+                    { id: 8, name: 'Gentle' },
+                    { id: 9, name: 'Independent' },
+                    { id: 10, name: 'Protective' },
+                    { id: 11, name: 'Curious' },
+                    { id: 12, name: 'Athletic' }
+                ];
+
+                const loading = ref(false);
+                const generatedNames = ref([]);
+                const dialogVisible = ref(false);
+                const selectedName = ref(null);
+
+                const getBreedLabel = (value) => {
+                    return breeds.find(b => b.value === value)?.label || value;
+                };
+
+                const getColorName = (id) => {
+                    return colors.find(c => c.id === id)?.name || '';
+                };
+
+                const getSelectedPersonalities = computed(() => {
+                    return petInfo.value.personalities
+                        .map(id => personalityTraits.find(t => t.id === id)?.name)
+                        .filter(Boolean)
+                        .join(', ');
+                });
+
+                const OPENAI_API_KEY = '';
+
+                const generateNames = async () => {
+                    if (!petInfo.value.breed || !petInfo.value.color || petInfo.value.personalities.length === 0) {
+                        ElMessage.warning('Please complete all the required information');
+                        return;
+                    }
+
+                    loading.value = true;
+
+                    try {
+                        const selectedTraits = petInfo.value.personalities
+                            .map(id => personalityTraits.find(t => t.id === id)?.name)
+                            .filter(Boolean)
+                            .join(', ');
+
+                        const selectedColor = colors.find(c => c.id === petInfo.value.color)?.name;
+                        const selectedBreed = breeds.find(b => b.value === petInfo.value.breed)?.label;
+
+                        const prompt = `Generate 5 ${petInfo.value.nameStyle} dog names for a ${selectedColor} ${selectedBreed} 
+                            who is a ${petInfo.value.gender} and has these personality traits: ${selectedTraits}.
+                            ${petInfo.value.customRequirements ? `Additional requirements: ${petInfo.value.customRequirements}` : ''}
+                            
+                            For each name, provide:
+                            1. The name itself
+                            2. A detailed explanation of why this name suits the dog
+                            3. The origin or meaning of the name
+                            
+                            Format each response as a JSON object with these fields:
+                            {
+                                "names": [
+                                    {
+                                        "value": "name",
+                                        "description": "explanation",
+                                        "origin": "origin/meaning"
+                                    }
+                                ]
+                            }`;
+
+                        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${OPENAI_API_KEY}`
+                            },
+                            body: JSON.stringify({
+                                model: "gpt-3.5-turbo",
+                                messages: [{
+                                    role: "user",
+                                    content: prompt
+                                }],
+                                temperature: 0.7,
+                                max_tokens: 1000
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('API request failed');
+                        }
+
+                        const data = await response.json();
+                        const content = data.choices[0].message.content;
+                        const generatedResults = JSON.parse(content);
+
+                        generatedNames.value = generatedResults.names.map((name, index) => ({
+                            id: Date.now() + index,
+                            value: name.value,
+                            description: `${name.description}\n\nOrigin: ${name.origin}`,
+                            saved: false
+                        }));
+
+                    } catch (error) {
+                        console.error('Error generating names:', error);
+                        ElMessage.error('Failed to generate names. Please try again.');
+                        
+                        // 使用备用数据
+                        const namesByStyle = {
+                            unique: [
+                                {
+                                    value: "Luna Eclipse",
+                                    description: "A mystical name combining the moon's beauty with celestial phenomena. Perfect for a " + selectedColor + " " + selectedBreed + " with " + selectedTraits + " traits.",
+                                    origin: "Latin origin, meaning 'moon'"
+                                },
+                                {
+                                    value: "Atlas",
+                                    description: "A powerful name representing strength and guidance. Suits a " + selectedTraits + " personality.",
+                                    origin: "Greek mythology, the titan who held up the sky"
+                                },
+                                {
+                                    value: "Nova Star",
+                                    description: "Represents brightness and new beginnings. Ideal for a " + selectedColor + " " + selectedBreed + ".",
+                                    origin: "Astronomical term for a bright new star"
+                                },
+                                {
+                                    value: "Zephyr",
+                                    description: "Meaning gentle west wind, perfect for a " + selectedTraits + " dog.",
+                                    origin: "Greek mythology, god of the west wind"
+                                },
+                                {
+                                    value: "Phoenix",
+                                    description: "Symbolizes uniqueness and rebirth. Great for a " + selectedColor + " " + selectedBreed + ".",
+                                    origin: "Mythological bird that rises from its ashes"
+                                }
+                            ],
+                            cute: [
+                                {
+                                    value: "Mochi",
+                                    description: "Sweet and soft, just like the Japanese dessert. Perfect for a " + selectedTraits + " " + selectedBreed + ".",
+                                    origin: "Japanese sweet rice cake"
+                                },
+                                {
+                                    value: "Pudding",
+                                    description: "Adorable and sweet, suits a " + selectedColor + " " + selectedBreed + " with " + selectedTraits + " personality.",
+                                    origin: "Inspired by the beloved dessert"
+                                },
+                                {
+                                    value: "Biscuit",
+                                    description: "Warm and lovable, great for a " + selectedTraits + " dog.",
+                                    origin: "Inspired by the sweet treat"
+                                },
+                                {
+                                    value: "Marshmallow",
+                                    description: "Soft and sweet, perfect for a " + selectedColor + " " + selectedBreed + ".",
+                                    origin: "Named after the fluffy sweet treat"
+                                },
+                                {
+                                    value: "Cookie",
+                                    description: "Everyone's favorite treat, suits a " + selectedTraits + " personality.",
+                                    origin: "Inspired by the beloved baked treat"
+                                }
+                            ],
+                            funny: [
+                                {
+                                    value: "Sir Wagglesworth",
+                                    description: "A hilarious noble title for your " + selectedColor + " " + selectedBreed + " with " + selectedTraits + " traits.",
+                                    origin: "Playful combination of dog behavior and aristocratic titles"
+                                },
+                                {
+                                    value: "Captain Biscuit",
+                                    description: "Leader of the treat-seeking mission, perfect for a " + selectedTraits + " " + selectedBreed + ".",
+                                    origin: "Combination of military rank and favorite dog treat"
+                                },
+                                {
+                                    value: "Professor Paws",
+                                    description: "The intellectual " + selectedColor + " " + selectedBreed + " with " + selectedTraits + " characteristics.",
+                                    origin: "Academic title combined with dog feature"
+                                },
+                                {
+                                    value: "Lord Woofington",
+                                    description: "The distinguished gentleman of the dog park, suits a " + selectedTraits + " personality.",
+                                    origin: "Aristocratic parody name"
+                                },
+                                {
+                                    value: "Duke of Barkshire",
+                                    description: "A noble title for your " + selectedColor + " " + selectedBreed + ".",
+                                    origin: "Playful take on British nobility titles"
+                                }
+                            ]
+                        };
+                        
+                        let selectedNames = namesByStyle[petInfo.value.nameStyle];
+                        
+                        if (petInfo.value.gender === 'girl') {
+                            selectedNames = selectedNames.map(name => {
+                                let newName = { ...name };
+                                if (name.value.includes('Sir') || name.value.includes('Lord')) {
+                                    newName.value = name.value
+                                        .replace('Sir', 'Lady')
+                                        .replace('Lord', 'Lady')
+                                        .replace('Duke', 'Duchess');
+                                    newName.description = name.description
+                                        .replace('gentleman', 'lady')
+                                        .replace('his', 'her');
+                                }
+                                return newName;
+                            });
+                        }
+
+                        if (petInfo.value.customRequirements) {
+                            selectedNames = selectedNames.map(name => ({
+                                ...name,
+                                description: `${name.description}\n\nCustom Requirements Considered: ${petInfo.value.customRequirements}`
+                            }));
+                        }
+
+                        generatedNames.value = selectedNames.map((name, index) => ({
+                            id: Date.now() + index,
+                            value: name.value,
+                            description: `${name.description}\n\nOrigin: ${name.origin}`,
+                            saved: false
+                        }));
+
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                const selectColor = (colorId) => {
+                    petInfo.value.color = colorId;
+                };
+
+                const togglePersonality = (traitId) => {
+                    const index = petInfo.value.personalities.indexOf(traitId);
+                    if (index === -1) {
+                        if (petInfo.value.personalities.length < 3) {
+                            petInfo.value.personalities.push(traitId);
+                        } else {
+                            ElMessage.warning('You can select up to 3 traits');
+                        }
+                    } else {
+                        petInfo.value.personalities.splice(index, 1);
+                    }
+                };
+
+                const showNameDetails = (name) => {
+                    selectedName.value = name;
+                    dialogVisible.value = true;
+                };
+
+                const saveName = (name) => {
+                    name.saved = true;
+                    ElMessage.success('Name saved successfully');
+                };
+
+                const getNameStyleLabel = (style) => {
+                    const styles = {
+                        unique: 'Unique Names',
+                        cute: 'Cute Names',
+                        funny: 'Funny Names'
+                    };
+                    return styles[style] || style;
+                };
+
+                return {
+                    petInfo,
+                    breeds,
+                    colors,
+                    loading,
+                    generatedNames,
+                    personalityTraits,
+                    dialogVisible,
+                    selectedName,
+                    getSelectedPersonalities,
+                    generateNames,
+                    selectColor,
+                    togglePersonality,
+                    showNameDetails,
+                    saveName,
+                    getBreedLabel,
+                    getColorName,
+                    getNameStyleLabel
+                };
+            }
+        });
+
+        app.use(ElementPlus, {
+            locale: ElementPlusLocaleEn
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+</html> 
