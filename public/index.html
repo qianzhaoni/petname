@@ -499,7 +499,7 @@
                         .join(', ');
                 });
 
-                const OPENAI_API_KEY = ";
+                const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
                 const generateNames = async () => {
                     if (!petInfo.value.breed || !petInfo.value.color || petInfo.value.personalities.length === 0) {
