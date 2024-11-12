@@ -5,8 +5,16 @@ import path from 'path'
 export default defineConfig({
   plugins: [vue()],
   build: {
-    outDir: '../dist',
-    emptyOutDir: true
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router', 'pinia', 'element-plus'],
+          'api': ['axios']
+        }
+      }
+    }
   },
   resolve: {
     alias: {
